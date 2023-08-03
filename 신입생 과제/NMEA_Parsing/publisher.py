@@ -5,6 +5,7 @@ import rclpy
 from rclpy.node import Node
 from custom_interface.msg import Gpsdata
 from rclpy.qos import QoSProfile
+import pandas as pd
 
 
 class Publisher(Node):
@@ -15,7 +16,6 @@ class Publisher(Node):
         self.timer = self.create_timer(0.07, self.publish_nmea_data)
 
         self.nmea = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
-        transformer = Transformer.from_crs('EPSG:4326', 'EPSG:32652')  # WGS to UTM
 
     def publish_nmea_data(self):
         if self.nmea.readable():
@@ -49,7 +49,11 @@ class Publisher(Node):
                 msg.check_sum = string[-2:]#.rstrip()
                 msg.utm_lat = utm_lat
                 msg.utm_lon = utm_lon
-
+                df = pd.read_csv('/home/seonwoo/ros2_ws/coordinates.csv', sep=',',
+                      encoding='cp949')  # 작업 데이터프레임
+                data = {'UTM_lat' : utm_lat, 'UTM_lon' : utm_lon}
+                df = pd.concat([df, pd.DataFrame(data, index=[0])], ignore_index=True)
+                df.to_csv('/home/seonwoo/ros2_ws/coordinates.csv', index=False, encoding='cp949')
                 self.gaa_publisher.publish(msg)
                 self.get_logger().info('Published NMEA Data')
             else:
@@ -66,3 +70,5 @@ def main(args=None):
 if __name__ == '__main__':
     main()
     
+
+
