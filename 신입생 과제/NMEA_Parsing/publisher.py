@@ -15,7 +15,6 @@ class Publisher(Node):
         self.timer = self.create_timer(0.07, self.publish_nmea_data)
 
         self.nmea = serial.Serial('/dev/ttyACM0', 115200, timeout=1)
-        transformer = Transformer.from_crs('EPSG:4326', 'EPSG:32652')  # WGS to UTM
 
     def publish_nmea_data(self):
         if self.nmea.readable():
@@ -66,3 +65,5 @@ def main(args=None):
 if __name__ == '__main__':
     main()
     
+
+
